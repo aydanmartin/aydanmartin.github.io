@@ -1,3 +1,13 @@
+@font-face {
+  font-family: "Prima Sans Mono Std";
+  src:
+    url("fonts/PrimaSansMonoStd-Bold.woff2") format("woff2"),
+    url("fonts/PrimaSansMonoStd-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #141414;
   --text: #e8e4df;
@@ -80,7 +90,7 @@ a:hover {
 }
 
 .site-name {
-  font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Prima Sans Mono Std", ui-monospace, monospace;
   font-size: 1.625rem;
   font-weight: 700;
   letter-spacing: 0.04em;
