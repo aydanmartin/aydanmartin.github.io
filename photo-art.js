@@ -4,14 +4,8 @@
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const timing = {
-    intro: {
-      scatter: prefersReducedMotion ? 0.35 : 0.7,
-      pulse: prefersReducedMotion ? 0.35 : 0.6,
-    },
-    full: {
-      scatter: prefersReducedMotion ? 0.55 : 1.35,
-      pulse: prefersReducedMotion ? 0.55 : 1.05,
-    },
+    scatter: prefersReducedMotion ? 0.55 : 1.35,
+    pulse: prefersReducedMotion ? 0.55 : 1.05,
   };
 
   const textSelector =
@@ -99,11 +93,11 @@
     if (window.updateClock) window.updateClock();
   }
 
-  function runRainbowEffect(variant = "full") {
+  function runRainbowEffect() {
     if (active) return;
     active = true;
 
-    const { scatter, pulse } = timing[variant];
+    const { scatter, pulse } = timing;
     const totalDuration = (scatter + pulse) * 1000;
 
     wrapAllText();
@@ -122,17 +116,8 @@
     if (!trigger || trigger.dataset.rainbowBound) return;
 
     trigger.dataset.rainbowBound = "true";
-    trigger.addEventListener("click", () => runRainbowEffect("full"));
+    trigger.addEventListener("click", runRainbowEffect);
   }
 
-  window.initPhotoArt = function ({ runIntro = false } = {}) {
-    bindTrigger();
-
-    if (runIntro && !sessionStorage.getItem("rainbowIntroSeen")) {
-      sessionStorage.setItem("rainbowIntroSeen", "1");
-      runRainbowEffect("intro");
-    }
-  };
-
-  window.initPhotoArt({ runIntro: true });
+  bindTrigger();
 })();
