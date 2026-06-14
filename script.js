@@ -167,7 +167,7 @@ function showPage(pageKey) {
   currentPage = pageKey;
 }
 
-document.querySelectorAll("[data-page]").forEach((link) => {
+document.querySelectorAll("a[data-page]").forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
     showPage(link.dataset.page);
