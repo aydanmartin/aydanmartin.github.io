@@ -1,19 +1,23 @@
 (function () {
-  const trigger = document.getElementById("photo-trigger");
-  if (!trigger) return;
-
   const shell = document.getElementById("page-shell");
   if (!shell) return;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const scatterWindow = prefersReducedMotion ? 0.55 : 1.35;
-  const pulseDuration = prefersReducedMotion ? 0.55 : 1.05;
-  const totalDuration = (scatterWindow + pulseDuration) * 1000;
+  const timing = {
+    intro: {
+      scatter: prefersReducedMotion ? 0.35 : 0.7,
+      pulse: prefersReducedMotion ? 0.35 : 0.6,
+    },
+    full: {
+      scatter: prefersReducedMotion ? 0.55 : 1.35,
+      pulse: prefersReducedMotion ? 0.55 : 1.05,
+    },
+  };
 
   const textSelector =
-    ".site-name, .site-nav a, .nav-sep, .section-title, .about-text p, .about-links a, .link-sep, .footer-copy, .footer-location, .footer-clock";
+    ".site-name, .site-nav a, .nav-sep, .section-title, .about-text p, .about-links a, .link-sep, .footer-updated, .footer-clock";
 
-  const unitSelector = ".theme-toggle, .social-icon";
+  const unitSelector = ".social-icon, .email-copy-btn";
 
   let active = false;
 
@@ -48,17 +52,24 @@
     delete el.dataset.rainbowWrapped;
   }
 
+  function isInActiveView(el) {
+    const view = el.closest(".page-view");
+    return view && view.classList.contains("is-active");
+  }
+
   function wrapAllText() {
-    shell.querySelectorAll(textSelector).forEach(wrapTextElement);
+    shell.querySelectorAll(textSelector).forEach((el) => {
+      if (!isInActiveView(el)) return;
+      wrapTextElement(el);
+    });
   }
 
   function unwrapAllText() {
     shell.querySelectorAll(textSelector).forEach(unwrapTextElement);
   }
 
-  function applyRandomDelays() {
-    const chars = shell.querySelectorAll(".rainbow-char");
-    chars.forEach((char) => {
+  function applyRandomDelays(scatterWindow) {
+    shell.querySelectorAll(".rainbow-char").forEach((char) => {
       char.style.setProperty("--rainbow-delay", `${Math.random() * scatterWindow}s`);
     });
 
@@ -79,24 +90,49 @@
     });
   }
 
-  trigger.addEventListener("click", () => {
+  function finishRainbowEffect() {
+    shell.classList.remove("is-rainbow-flush");
+    shell.style.removeProperty("--rainbow-pulse");
+    clearDelays();
+    unwrapAllText();
+    active = false;
+    if (window.updateClock) window.updateClock();
+  }
+
+  function runRainbowEffect(variant = "full") {
     if (active) return;
     active = true;
 
+    const { scatter, pulse } = timing[variant];
+    const totalDuration = (scatter + pulse) * 1000;
+
     wrapAllText();
-    applyRandomDelays();
+    applyRandomDelays(scatter);
 
     shell.classList.remove("is-rainbow-flush");
     void shell.offsetWidth;
     shell.classList.add("is-rainbow-flush");
-    shell.style.setProperty("--rainbow-pulse", `${pulseDuration}s`);
+    shell.style.setProperty("--rainbow-pulse", `${pulse}s`);
 
-    setTimeout(() => {
-      shell.classList.remove("is-rainbow-flush");
-      shell.style.removeProperty("--rainbow-pulse");
-      clearDelays();
-      unwrapAllText();
-      active = false;
-    }, totalDuration);
-  });
+    setTimeout(finishRainbowEffect, totalDuration);
+  }
+
+  function bindTrigger() {
+    const trigger = document.getElementById("photo-trigger");
+    if (!trigger || trigger.dataset.rainbowBound) return;
+
+    trigger.dataset.rainbowBound = "true";
+    trigger.addEventListener("click", () => runRainbowEffect("full"));
+  }
+
+  window.initPhotoArt = function ({ runIntro = false } = {}) {
+    bindTrigger();
+
+    if (runIntro && !sessionStorage.getItem("rainbowIntroSeen")) {
+      sessionStorage.setItem("rainbowIntroSeen", "1");
+      runRainbowEffect("intro");
+    }
+  };
+
+  window.initPhotoArt({ runIntro: true });
 })();
